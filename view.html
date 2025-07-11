@@ -3,16 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <title>Ta写给你的留言</title>
+  <style>
+    button {
+      padding: 8px 16px;
+      background-color: #eee;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ddd;
+    }
+  </style>
 </head>
 <body>
   <h2>来自Ta的留言：</h2>
   <div id="message">加载中...</div>
   <br>
-  <a id="writeLink"
-     href="javascript:void(0);"
-     style="padding: 8px 12px; background-color: #eee; border-radius: 5px; text-decoration: none; color: blue;">
-     ✏️ 我也想说点什么
-  </a>
+  <button id="goWrite">✏️ 我也想说点什么</button>
   <div id="error" style="color: red;"></div>
 
   <!-- Firebase SDK -->
@@ -29,11 +37,11 @@
     const urlParams = new URLSearchParams(window.location.search);
     const user = urlParams.get('user');
     const errorDiv = document.getElementById("error");
-    const writeLink = document.getElementById("writeLink");
+    const goBtn = document.getElementById("goWrite");
 
     if (!user || (user !== 'A' && user !== 'B')) {
       errorDiv.innerText = "❌ 页面参数错误，请使用 ?user=A 或 ?user=B";
-      writeLink.style.display = "none";
+      goBtn.disabled = true;
     } else {
       const targetKey = user === 'A' ? 'B_to_A' : 'A_to_B';
       const messageDiv = document.getElementById("message");
@@ -43,9 +51,10 @@
         messageDiv.innerText = msg ? msg : "Ta还没写纸条给你呢～";
       });
 
-      // 💥 关键点：点击时执行真正跳转
-      writeLink.addEventListener("click", () => {
-        window.location.href = "write.html?user=" + user;
+      // 💡 核心跳转逻辑
+      goBtn.addEventListener("click", () => {
+        const targetUrl = "write?user=" + user;
+        window.location.href = targetUrl;
       });
     }
   </script>
