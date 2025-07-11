@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Write Message</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: sans-serif;
@@ -11,22 +11,19 @@
       text-align: center;
     }
     textarea {
-      width: 90%;
-      max-width: 400px;
-      height: 100px;
-      font-size: 1rem;
-      margin-bottom: 10px;
+      width: 80%;
+      font-size: 1em;
     }
     button {
+      font-size: 1em;
       padding: 10px 20px;
-      font-size: 1rem;
-      border-radius: 5px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <h2 id="title">Write a message to ...</h2>
-  <textarea id="input" placeholder="Type your message here..."></textarea><br>
+  <textarea id="input" placeholder="Leave a message..." rows="5"></textarea><br>
   <button id="submitBtn">Submit</button>
 
   <script type="module">
@@ -49,39 +46,36 @@
 
     const currentUser = new URLSearchParams(window.location.search).get('user');
     const targetUser = currentUser === 'A' ? 'B' : 'A';
-    const titleEl = document.getElementById("title");
 
-    // 获取当前写信对象的名字
-    get(child(ref(db), 'messages/' + targetUser)).then(snapshot => {
-      if (snapshot.exists()) {
-        const name = snapshot.val().name || "someone";
-        titleEl.textContent = `Write a message to ${name}`;
-      }
-    });
+    const input = document.getElementById("input");
+    const title = document.getElementById("title");
+
+    // 获取对方名字用于标题
+    get(child(ref(db), 'messages/' + targetUser))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const targetName = snapshot.val().name || targetUser;
+          title.innerText = `Write a message to ${targetName}`;
+        } else {
+          title.innerText = `Write a message to ${targetUser}`;
+        }
+      })
+      .catch(() => {
+        title.innerText = `Write a message`;
+      });
 
     document.getElementById("submitBtn").addEventListener("click", () => {
-      const message = document.getElementById("input").value.trim();
+      const message = input.value.trim();
       if (!message) {
-        alert("Message cannot be empty.");
+        alert("Please enter a message.");
         return;
       }
 
-      const senderNameRef = ref(db, 'messages/' + currentUser + '/name');
-      get(senderNameRef).then(snapshot => {
-        const senderName = snapshot.val() || "Anonymous";
+      set(ref(db, 'messages/' + targetUser + '/message'), message);
+      set(ref(db, 'messages/' + targetUser + '/timestamp'), Date.now());
 
-        set(ref(db, 'messages/' + targetUser), {
-          message: message,
-          timestamp: Date.now(),
-          name: currentUser === 'A' ? "Judy" : "Nick"  // 保证name字段不被误覆盖
-        }).then(() => {
-          alert("Message sent!");
-          document.getElementById("input").value = "";
-        }).catch(err => {
-          console.error(err);
-          alert("Failed to send message.");
-        });
-      });
+      alert("Message sent!");
+      input.value = "";
     });
   </script>
 </body>
