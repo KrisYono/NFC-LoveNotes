@@ -8,9 +8,10 @@
   <h2>来自Ta的留言：</h2>
   <div id="message">加载中...</div>
   <br>
-  <!-- 用链接代替按钮 -->
-  <a id="writeLink" href="#" style="padding: 8px 12px; background-color: #ddd; text-decoration: none; border-radius: 5px;">
-    ✏️ 我也想说点什么
+  <a id="writeLink"
+     href="javascript:void(0);"
+     style="padding: 8px 12px; background-color: #eee; border-radius: 5px; text-decoration: none; color: blue;">
+     ✏️ 我也想说点什么
   </a>
   <div id="error" style="color: red;"></div>
 
@@ -34,15 +35,17 @@
       errorDiv.innerText = "❌ 页面参数错误，请使用 ?user=A 或 ?user=B";
       writeLink.style.display = "none";
     } else {
-      // 设置跳转链接
-      writeLink.href = "write.html?user=" + user;
-
       const targetKey = user === 'A' ? 'B_to_A' : 'A_to_B';
       const messageDiv = document.getElementById("message");
 
       db.ref("messages/" + targetKey).on("value", (snapshot) => {
         const msg = snapshot.val();
         messageDiv.innerText = msg ? msg : "Ta还没写纸条给你呢～";
+      });
+
+      // 💥 关键点：点击时执行真正跳转
+      writeLink.addEventListener("click", () => {
+        window.location.href = "write.html?user=" + user;
       });
     }
   </script>
