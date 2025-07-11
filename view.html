@@ -8,7 +8,10 @@
   <h2>来自Ta的留言：</h2>
   <div id="message">加载中...</div>
   <br>
-  <button id="goWrite">我也想说点什么</button>
+  <!-- 用链接代替按钮 -->
+  <a id="writeLink" href="#" style="padding: 8px 12px; background-color: #ddd; text-decoration: none; border-radius: 5px;">
+    ✏️ 我也想说点什么
+  </a>
   <div id="error" style="color: red;"></div>
 
   <!-- Firebase SDK -->
@@ -16,32 +19,30 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
 
   <script>
-    // ✅ 初始化
     const firebaseConfig = {
       databaseURL: "https://nfc-lovenotes-default-rtdb.firebaseio.com/"
     };
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ✅ 获取 URL 参数
     const urlParams = new URLSearchParams(window.location.search);
     const user = urlParams.get('user');
     const errorDiv = document.getElementById("error");
+    const writeLink = document.getElementById("writeLink");
 
     if (!user || (user !== 'A' && user !== 'B')) {
       errorDiv.innerText = "❌ 页面参数错误，请使用 ?user=A 或 ?user=B";
+      writeLink.style.display = "none";
     } else {
+      // 设置跳转链接
+      writeLink.href = "write.html?user=" + user;
+
       const targetKey = user === 'A' ? 'B_to_A' : 'A_to_B';
       const messageDiv = document.getElementById("message");
 
       db.ref("messages/" + targetKey).on("value", (snapshot) => {
         const msg = snapshot.val();
         messageDiv.innerText = msg ? msg : "Ta还没写纸条给你呢～";
-      });
-
-      // ✅ 点击跳转逻辑，确保绑定成功
-      document.getElementById("goWrite").addEventListener("click", () => {
-        window.location.href = "write.html?user=" + user;
       });
     }
   </script>
