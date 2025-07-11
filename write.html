@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>写一张小纸条</title>
+</head>
+<body>
+  <h2>写一张小纸条给Ta ✏️</h2>
+  <textarea id="msg" rows="5" cols="30" placeholder="写下想说的话..."></textarea><br>
+  <button onclick="submitMessage()">提交留言</button>
+  <div id="status"></div>
+
+  <!-- 引入 Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      databaseURL: "https://nfc-lovenotes-default-rtdb.firebaseio.com/"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const user = urlParams.get('user');
+    const writeKey = user === 'A' ? 'A_to_B' : 'B_to_A';
+
+    function submitMessage() {
+      const msg = document.getElementById("msg").value;
+      db.ref("messages/" + writeKey).set(msg)
+        .then(() => {
+          document.getElementById("status").innerText = "留言成功！快让Ta来看看吧 ❤️";
+          document.getElementById("msg").value = "";
+        });
+    }
+  </script>
+</body>
+</html>
