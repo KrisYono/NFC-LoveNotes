@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>查看留言</title>
 </head>
 <body>
   <h2>你收到的留言</h2>
-  <p id="message">正在加载...</p>
+  <p id="message">正在加载留言...</p>
+  <button id="replyBtn">💌 写给对方</button>
 
   <script type="module">
+    // 引入 Firebase 所需模块
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
     import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
+    // Firebase 配置
     const firebaseConfig = {
       apiKey: "AIzaSyC2XD_Fi8KcAk1hQXpr7rjwraJdq3N41Sw",
       authDomain: "nfc-lovenotes.firebaseapp.com",
@@ -23,24 +26,35 @@
       measurementId: "G-NFMQ68JFQ5"
     };
 
+    // 初始化 Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // 获取当前 user 参数（如 ?user=A）
     const userId = new URLSearchParams(window.location.search).get('user');
+    const otherUser = userId === 'A' ? 'B' : 'A';
 
+    // 按钮跳转至写给对方的页面
+    document.getElementById("replyBtn").addEventListener("click", () => {
+      window.location.href = `write.html?user=${otherUser}`;
+    });
+
+    // 获取留言数据
     if (!userId) {
-      document.getElementById("message").innerText = "错误：未提供 user 参数";
+      document.getElementById("message").innerText = "❌ 错误：未提供 user 参数";
     } else {
-      get(child(ref(db), 'messages/' + userId)).then((snapshot) => {
-        if (snapshot.exists()) {
-          document.getElementById("message").innerText = snapshot.val().message;
-        } else {
-          document.getElementById("message").innerText = "暂无留言～";
-        }
-      }).catch((error) => {
-        console.error(error);
-        document.getElementById("message").innerText = "读取失败";
-      });
+      get(child(ref(db), 'messages/' + userId))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            document.getElementById("message").innerText = snapshot.val().message;
+          } else {
+            document.getElementById("message").innerText = "🙈 暂无留言哦～";
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          document.getElementById("message").innerText = "读取失败，请稍后再试";
+        });
     }
   </script>
 </body>
