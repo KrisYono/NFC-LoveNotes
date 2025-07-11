@@ -2,42 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Message for You</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View Message</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       padding: 20px;
-      max-width: 600px;
-      margin: auto;
       text-align: center;
     }
     #message {
-      font-size: 18px;
       margin: 20px 0;
+      font-size: 1.2rem;
     }
     button {
-      font-size: 16px;
       padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      background-color: #ff69b4;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #ff1493;
+      font-size: 1rem;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <h2 id="title">Message for you</h2>
+  <h2 id="title">Message for ...</h2>
   <p id="message">Loading...</p>
-  <button id="replyBtn">💌 Write Back</button>
+  <button id="replyBtn">💌 Write a reply</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+    import { getDatabase, ref, child, get } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC2XD_Fi8KcAk1hQXpr7rjwraJdq3N41Sw",
@@ -54,24 +45,32 @@
     const db = getDatabase(app);
 
     const userId = new URLSearchParams(window.location.search).get('user');
-    const otherUser = userId === "A" ? "B" : "A";
+    const otherUserId = userId === 'A' ? 'B' : 'A';
 
-    // 设置标题和按钮
-    get(child(ref(db), 'messages/' + userId)).then((snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        document.getElementById("title").innerText = `Message for ${data.name || userId}`;
-        document.getElementById("message").innerText = data.message || "(No message yet)";
-      } else {
-        document.getElementById("message").innerText = "(No message found)";
-      }
-    }).catch((error) => {
-      console.error(error);
-      document.getElementById("message").innerText = "Error loading message.";
-    });
+    const messageEl = document.getElementById("message");
+    const titleEl = document.getElementById("title");
+
+    if (!userId) {
+      messageEl.textContent = "❌ Missing user ID in URL.";
+    } else {
+      const userRef = ref(db, 'messages/' + userId);
+      get(userRef).then(snapshot => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          titleEl.textContent = `Message for ${data.name}`;
+          messageEl.textContent = data.message || "(No message yet)";
+        } else {
+          titleEl.textContent = "Message";
+          messageEl.textContent = "🙈 No message found.";
+        }
+      }).catch(error => {
+        console.error(error);
+        messageEl.textContent = "Failed to load message.";
+      });
+    }
 
     document.getElementById("replyBtn").addEventListener("click", () => {
-      window.location.href = `write.html?user=${otherUser}`;
+      window.location.href = `write.html?user=${otherUserId}`;
     });
   </script>
 </body>

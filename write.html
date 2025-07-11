@@ -2,40 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Write a Message</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Write Message</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       padding: 20px;
-      max-width: 600px;
-      margin: auto;
       text-align: center;
     }
     textarea {
-      width: 100%;
-      font-size: 16px;
-      padding: 10px;
-      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      height: 100px;
+      font-size: 1rem;
+      margin-bottom: 10px;
     }
     button {
-      font-size: 16px;
       padding: 10px 20px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 8px;
-      background-color: #32cd32;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #228b22;
+      font-size: 1rem;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <h2 id="writeTitle">💌 Write a Message</h2>
-  <textarea id="input" placeholder="Leave your message here..." rows="6"></textarea><br>
+  <h2 id="title">Write a message to ...</h2>
+  <textarea id="input" placeholder="Type your message here..."></textarea><br>
   <button id="submitBtn">Submit</button>
 
   <script type="module">
@@ -56,37 +47,40 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const userId = new URLSearchParams(window.location.search).get('user');
-    const otherUser = userId === "A" ? "B" : "A";
+    const currentUser = new URLSearchParams(window.location.search).get('user');
+    const targetUser = currentUser === 'A' ? 'B' : 'A';
+    const titleEl = document.getElementById("title");
 
-    const writeTitle = document.getElementById("writeTitle");
-
-    // 设置标题（写给谁）
-    get(child(ref(db), 'messages/' + otherUser)).then((snapshot) => {
+    // 获取当前写信对象的名字
+    get(child(ref(db), 'messages/' + targetUser)).then(snapshot => {
       if (snapshot.exists()) {
-        const name = snapshot.val().name || otherUser;
-        writeTitle.innerText = `💌 Write to ${name}`;
-      } else {
-        writeTitle.innerText = "💌 Write to your friend";
+        const name = snapshot.val().name || "someone";
+        titleEl.textContent = `Write a message to ${name}`;
       }
     });
 
     document.getElementById("submitBtn").addEventListener("click", () => {
-      const content = document.getElementById("input").value;
-      if (!content.trim()) {
-        alert("Please enter some content!");
+      const message = document.getElementById("input").value.trim();
+      if (!message) {
+        alert("Message cannot be empty.");
         return;
       }
 
-      set(ref(db, 'messages/' + userId), {
-        message: content,
-        timestamp: Date.now()
-      }).then(() => {
-        alert("Message saved!");
-        document.getElementById("input").value = "";
-      }).catch((error) => {
-        console.error("Write failed:", error);
-        alert("Something went wrong. Try again later.");
+      const senderNameRef = ref(db, 'messages/' + currentUser + '/name');
+      get(senderNameRef).then(snapshot => {
+        const senderName = snapshot.val() || "Anonymous";
+
+        set(ref(db, 'messages/' + targetUser), {
+          message: message,
+          timestamp: Date.now(),
+          name: currentUser === 'A' ? "Judy" : "Nick"  // 保证name字段不被误覆盖
+        }).then(() => {
+          alert("Message sent!");
+          document.getElementById("input").value = "";
+        }).catch(err => {
+          console.error(err);
+          alert("Failed to send message.");
+        });
       });
     });
   </script>
