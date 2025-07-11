@@ -1,12 +1,44 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>写留言</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Write Message</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      text-align: center;
+    }
+    h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    textarea {
+      width: 100%;
+      font-size: 16px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      resize: vertical;
+    }
+    button {
+      margin-top: 20px;
+      font-size: 18px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #42a5f5;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h2>Write Message</h2>
-  <textarea id="input" placeholder="Leave a message..." rows="5" cols="40"></textarea><br>
+  <h2>✏️ Leave Your Message</h2>
+  <textarea id="input" placeholder="Write something..." rows="5"></textarea><br>
   <button id="submitBtn">Submit</button>
 
   <script type="module">
@@ -30,13 +62,13 @@
     const userId = new URLSearchParams(window.location.search).get('user');
 
     document.getElementById("submitBtn").addEventListener("click", () => {
-      const content = document.getElementById("input").value;
+      const content = document.getElementById("input").value.trim();
       if (!userId) {
-        alert("缺少 user 参数！");
+        alert("❌ Missing user parameter.");
         return;
       }
-      if (!content.trim()) {
-        alert("请输入留言内容");
+      if (!content) {
+        alert("Please write something!");
         return;
       }
 
@@ -44,11 +76,11 @@
         message: content,
         timestamp: Date.now()
       }).then(() => {
-        alert("Message Saved！");
+        alert("✅ Message saved!");
         document.getElementById("input").value = "";
       }).catch((error) => {
-        console.error("写入失败", error);
-        alert("写入失败，请检查控制台错误信息");
+        console.error("Failed to write", error);
+        alert("Failed to save. Please check the console for errors.");
       });
     });
   </script>
