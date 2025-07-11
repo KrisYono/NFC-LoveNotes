@@ -8,9 +8,10 @@
   <h2>写一张小纸条给Ta ✏️</h2>
   <textarea id="msg" rows="5" cols="30" placeholder="写下想说的话..."></textarea><br>
   <button onclick="submitMessage()">提交留言</button>
-  <div id="status"></div>
+  <div id="status" style="color: green;"></div>
+  <div id="error" style="color: red;"></div>
 
-  <!-- 引入 Firebase SDK -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
 
@@ -23,13 +24,29 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const user = urlParams.get('user');
-    const writeKey = user === 'A' ? 'A_to_B' : 'B_to_A';
+    let writeKey = null;
+
+    if (!user || (user !== 'A' && user !== 'B')) {
+      document.getElementById("error").innerText = "❌ 页面参数错误，请使用 ?user=A 或 ?user=B";
+    } else {
+      writeKey = user === 'A' ? 'A_to_B' : 'B_to_A';
+    }
 
     function submitMessage() {
+      if (!writeKey) {
+        alert("身份参数缺失，无法提交留言");
+        return;
+      }
+
       const msg = document.getElementById("msg").value;
+      if (!msg.trim()) {
+        alert("留言内容不能为空！");
+        return;
+      }
+
       db.ref("messages/" + writeKey).set(msg)
         .then(() => {
-          document.getElementById("status").innerText = "留言成功！快让Ta来看看吧 ❤️";
+          document.getElementById("status").innerText = "留言成功！快让Ta来看吧 ❤️";
           document.getElementById("msg").value = "";
         });
     }
