@@ -1,60 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>Ta写给你的留言</title>
-  <style>
-    button {
-      padding: 8px 16px;
-      background-color: #eee;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #ddd;
-    }
-  </style>
+  <title>查看留言</title>
 </head>
 <body>
-  <h2>来自Ta的留言：</h2>
-  <div id="message">加载中...</div>
-  <br>
-  <button id="goWrite">✏️ 我也想说点什么</button>
-  <div id="error" style="color: red;"></div>
+  <h2>你收到的留言</h2>
+  <p id="message">正在加载...</p>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
-  <script>
     const firebaseConfig = {
-      databaseURL: "https://nfc-lovenotes-default-rtdb.firebaseio.com/"
+      apiKey: "AIzaSyC2XD_Fi8KcAk1hQXpr7rjwraJdq3N41Sw",
+      authDomain: "nfc-lovenotes.firebaseapp.com",
+      databaseURL: "https://nfc-lovenotes-default-rtdb.firebaseio.com",
+      projectId: "nfc-lovenotes",
+      storageBucket: "nfc-lovenotes.firebasestorage.app",
+      messagingSenderId: "928670018716",
+      appId: "1:928670018716:web:ea48e9580d67dcee4f1159",
+      measurementId: "G-NFMQ68JFQ5"
     };
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const user = urlParams.get('user');
-    const errorDiv = document.getElementById("error");
-    const goBtn = document.getElementById("goWrite");
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    if (!user || (user !== 'A' && user !== 'B')) {
-      errorDiv.innerText = "❌ 页面参数错误，请使用 ?user=A 或 ?user=B";
-      goBtn.disabled = true;
+    const userId = new URLSearchParams(window.location.search).get('user');
+
+    if (!userId) {
+      document.getElementById("message").innerText = "错误：未提供 user 参数";
     } else {
-      const targetKey = user === 'A' ? 'B_to_A' : 'A_to_B';
-      const messageDiv = document.getElementById("message");
-
-      db.ref("messages/" + targetKey).on("value", (snapshot) => {
-        const msg = snapshot.val();
-        messageDiv.innerText = msg ? msg : "Ta还没写纸条给你呢～";
-      });
-
-      // 💡 核心跳转逻辑
-      goBtn.addEventListener("click", () => {
-        const targetUrl = "write?user=" + user;
-        window.location.href = targetUrl;
+      get(child(ref(db), 'messages/' + userId)).then((snapshot) => {
+        if (snapshot.exists()) {
+          document.getElementById("message").innerText = snapshot.val().message;
+        } else {
+          document.getElementById("message").innerText = "暂无留言～";
+        }
+      }).catch((error) => {
+        console.error(error);
+        document.getElementById("message").innerText = "读取失败";
       });
     }
   </script>

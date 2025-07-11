@@ -1,55 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>写一张小纸条</title>
+  <title>写留言</title>
 </head>
 <body>
-  <h2>写一张小纸条给Ta ✏️</h2>
-  <textarea id="msg" rows="5" cols="30" placeholder="写下想说的话..."></textarea><br>
-  <button onclick="submitMessage()">提交留言</button>
-  <div id="status" style="color: green;"></div>
-  <div id="error" style="color: red;"></div>
+  <h2>给TA写一段留言</h2>
+  <textarea id="input" placeholder="写下你想说的话..." rows="5" cols="40"></textarea><br>
+  <button id="submitBtn">提交</button>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
-  <script>
     const firebaseConfig = {
-      databaseURL: "https://nfc-lovenotes-default-rtdb.firebaseio.com/"
+      apiKey: "AIzaSyC2XD_Fi8KcAk1hQXpr7rjwraJdq3N41Sw",
+      authDomain: "nfc-lovenotes.firebaseapp.com",
+      databaseURL: "https://nfc-lovenotes-default-rtdb.firebaseio.com",
+      projectId: "nfc-lovenotes",
+      storageBucket: "nfc-lovenotes.firebasestorage.app",
+      messagingSenderId: "928670018716",
+      appId: "1:928670018716:web:ea48e9580d67dcee4f1159",
+      measurementId: "G-NFMQ68JFQ5"
     };
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const user = urlParams.get('user');
-    let writeKey = null;
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    if (!user || (user !== 'A' && user !== 'B')) {
-      document.getElementById("error").innerText = "❌ 页面参数错误，请使用 ?user=A 或 ?user=B";
-    } else {
-      writeKey = user === 'A' ? 'A_to_B' : 'B_to_A';
-    }
+    const userId = new URLSearchParams(window.location.search).get('user');
 
-    function submitMessage() {
-      if (!writeKey) {
-        alert("身份参数缺失，无法提交留言");
+    document.getElementById("submitBtn").addEventListener("click", () => {
+      const content = document.getElementById("input").value;
+      if (!userId) {
+        alert("缺少 user 参数！");
+        return;
+      }
+      if (!content.trim()) {
+        alert("请输入留言内容");
         return;
       }
 
-      const msg = document.getElementById("msg").value;
-      if (!msg.trim()) {
-        alert("留言内容不能为空！");
-        return;
-      }
-
-      db.ref("messages/" + writeKey).set(msg)
-        .then(() => {
-          document.getElementById("status").innerText = "留言成功！快让Ta来看吧 ❤️";
-          document.getElementById("msg").value = "";
-        });
-    }
+      set(ref(db, 'messages/' + userId), {
+        message: content,
+        timestamp: Date.now()
+      }).then(() => {
+        alert("留言已保存！");
+        document.getElementById("input").value = "";
+      }).catch((error) => {
+        console.error("写入失败", error);
+        alert("写入失败，请检查控制台错误信息");
+      });
+    });
   </script>
 </body>
 </html>
