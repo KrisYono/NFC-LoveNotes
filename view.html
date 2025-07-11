@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Ta写给你的留言</title>
+</head>
+<body>
+  <h2>来自Ta的留言：</h2>
+  <div id="message">加载中...</div>
+  <br>
+  <button onclick="goToWritePage()">我也想说点什么</button>
+
+  <!-- 引入 Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+
+  <script>
+    // ✅ 修改成你自己的配置
+    const firebaseConfig = {
+      databaseURL: "https://nfc-lovenotes-default-rtdb.firebaseio.com/"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 获取身份参数，例如 ?user=A 或 ?user=B
+    const urlParams = new URLSearchParams(window.location.search);
+    const user = urlParams.get('user');  // 当前用户身份
+    const targetKey = user === 'A' ? 'B_to_A' : 'A_to_B'; // 查看对方写的
+
+    const messageDiv = document.getElementById("message");
+
+    db.ref("messages/" + targetKey).on("value", (snapshot) => {
+      const msg = snapshot.val();
+      messageDiv.innerText = msg ? msg : "Ta还没写纸条给你呢～";
+    });
+
+    function goToWritePage() {
+      window.location.href = "write.html?user=" + user;
+    }
+  </script>
+</body>
+</html>
