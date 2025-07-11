@@ -5,9 +5,9 @@
   <title>写留言</title>
 </head>
 <body>
-  <h2>给TA写一段留言</h2>
-  <textarea id="input" placeholder="写下你想说的话..." rows="5" cols="40"></textarea><br>
-  <button id="submitBtn">提交</button>
+  <h2>Write Message</h2>
+  <textarea id="input" placeholder="Leave a message..." rows="5" cols="40"></textarea><br>
+  <button id="submitBtn">Submit</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
@@ -44,7 +44,7 @@
         message: content,
         timestamp: Date.now()
       }).then(() => {
-        alert("留言已保存！");
+        alert("Message Saved！");
         document.getElementById("input").value = "";
       }).catch((error) => {
         console.error("写入失败", error);
